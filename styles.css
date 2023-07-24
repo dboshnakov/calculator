@@ -5,6 +5,8 @@
 
 body {
     display: flex;
+    height: 100vh;
+    width: 100vw;
     justify-content: center;
     align-items: center;
 }
@@ -12,7 +14,7 @@ body {
 .frame {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     box-sizing: border-box;
     border: 1px solid black;
@@ -24,7 +26,11 @@ body {
 
 .display {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-evenly;
+    gap: 3px;
+    padding: 3px 12px 3px 12px;
     box-sizing: border-box;
     border: 1px solid black;
     font-size: 80px;
