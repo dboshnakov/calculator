@@ -1,137 +1,211 @@
-let outputBox = document.querySelector('div.display-one');
-outputBox.textContent = '';
-let inputBox = document.querySelector('div.display-two');
-inputBox.textContent = '0';
-let allowedInput = new RegExp(/[^0-9\/\*\)\(\-\+\=\.\%| ]/gi);
-let operators = new RegExp(/\/\*\)\(\-\+\=\.\%|/);
-let buffer = [];
-let output = '0';
+const allowedInput = new RegExp(/^[\d|\/|\*|\-|\+|\=|\.|\%]$/);
+const digits = new RegExp(/^[\d]*$/i);
+const operators = new RegExp(/^[\/\*\-\+\=]$/);
 
-function calcInput(input) {
-    input = input.replace(/\s/g, '');
-    //console.log(input);
-    inputBox.textContent = '';
-    if (input.match(allowedInput) ) {
-        console.log("unexpected input");
-        inputBox.textContent = "err";
-    } else {
-        //console.log(input);
-        inputBox.textContent += input;
-    }
+let currentInput = '';
+let userInput = '';
+let calcQueue = [];
+
+//3. handling of user input 
+function isInputAllowed(input) {
+    if (allowedInput.test(input)) {
+        return true;
+    } 
+    return false;
 }
+//Four possible cases:
+//1 - calcQueue is empty AND userInput is empty
+//2 - calcQueue is empty AND userInput is NOT empty
+//3 - calcQueue is NOT empty AND userInput is empty
+//4 - calcQueue is NOT empty and userInput is NOT empty
 
-function buttonClick(id) {
-    //console.log(id);
-    if (id === '=' || id === '+' || id === '-' || id === '/' || id === '*' || id === '%') {
-        stageBuffer(id);
-        //updateOutput(inputBox.textContent,id);
-        inputBox.textContent = output;
-        updateOutput(buffer);
-        calculate(id);
-    }  else if (id === 'CE') {
-        clearEntry();
-    } else if (id === 'C') {
-        clearAll();
-    } else if (id === 'bckspc') {
-        backspace();
-    } else if (inputBox.textContent === '0') {
-        inputBox.textContent = id;
-    } else {
-        inputBox.textContent = id;
-        //inputBox.textContent += id;
-    }
-}
-
-function calculate(id) {
-    //console.clear();
-    console.log(buffer);
-    if (buffer[2] !== undefined) {
-        if (buffer[1] === '+') {
-            output = addition(buffer[0],buffer[2]);
-            console.log(output);
-        } else if (buffer[1] === '-') {
-            output = subtraction(buffer[0],buffer[2]);
-            console.log(output);
-        } else if (buffer[1] === '*') {
-            output = multiplication(buffer[0],buffer[2]);
-            console.log(output);
-        } else if (buffer[1] === '/') {
-            output = division(buffer[0],buffer[2]);
-            console.log(output);
-        } else if (buffer[1] === '=') {
-            output = equals(buffer[0],buffer[2]);
-            console.log(output);
-        } else if (buffer[1] === '%') {
-            output = percent(buffer[0],buffer[2]);
-            console.log(output);
+//check input type - digit, decimal point, percent, math operator:
+function handleUserInput(input) {
+    if (!isInputAllowed(input)) {
+        return "Error: Input character not allowed"
+    } 
+    //console.log('input:',input, " uI:",userInput, " cQ",calcQueue);
+    //if userInput is empty
+    if (userInput === '') {
+        //check if input is math operator
+        if (classifyInput(input) === 'operator') {
+            //if the last item in calcQueue is a math operator, replace it
+            if (calcQueue.length > 1 && classifyInput(calcQueue[calcQueue.length-1]) === 'operator') {
+                removeLastCQ();
+                pushToCalcQueue(input);
+            } else if (calcQueue.length === 1) {
+                pushToCalcQueue(input);
+            }
+        //if input is different from %, concatenate it to userInput
+        } else if (input !== '%') {
+            userInput += input;
+        } else if (input === '%' && calcQueue.length === 1) {
+            calcQueue[0] = calcQueue[0]+input;
         }
-        inputBox.textContent = output;
-        updateOutput(buffer);
-        buffer = [];
-        stageBuffer(id);
-        buffer.splice(0,3);
-        //buffer.unshift(output);
-        console.log(buffer);
-        //updateOutput(buffer);
+    //if userInput is not empty
+    } else {
+        if (classifyInput(userInput) === 'digits') {
+            if (classifyInput(input) === 'operator') {
+                if (calcQueue.length === 1) {
+                    removeLastCQ();
+                }
+                pushToCalcQueue(userInput);
+                clearUserInput();
+                pushToCalcQueue(input);
+            } else {
+                userInput += input;
+            }
+        } else if (classifyInput(userInput) === 'only decimal') {
+            if (classifyInput(input) === 'digits') {
+                userInput += input;
+            } 
+        } else if (classifyInput(userInput) === 'digits ending on percent(s)') {
+            if (classifyInput(input) === 'digits') {
+                if (calcQueue.length === 1) {
+                    removeLastCQ();
+                }
+                pushToCalcQueue(userInput);
+                pushToCalcQueue('*');
+                userInput = input;
+            } else if (input === '%') {
+                userInput += input;
+            } else if (classifyInput(input) === 'operator') {
+                if (calcQueue.length === 1) {
+                    removeLastCQ();
+                }
+                pushToCalcQueue(userInput);
+                clearUserInput();
+                pushToCalcQueue(input);
+            }
+        } else if (classifyInput(userInput) === 'digits ending on decimal') {
+            if (classifyInput(input) === 'digits') {
+                userInput += input;
+            } else if (input === '%') {
+                removeLastString(userInput);
+                userInput += input;
+            } else if (classifyInput(input) === 'operator') {
+                if (calcQueue.length === 1) {
+                    removeLastCQ();
+                }
+                removeLastString(userInput);
+                pushToCalcQueue(userInput);
+                clearUserInput();
+                pushToCalcQueue(input);
+            }
+        } else if (classifyInput(userInput) === 'digits with decimal inbetween') {
+            if (classifyInput(input) === 'digits' || input === '%') {
+                userInput += input;
+            } else if (classifyInput(input) === 'operator') {
+                if (calcQueue.length === 1) {
+                    removeLastCQ();
+                }
+                pushToCalcQueue(userInput);
+                clearUserInput();
+                pushToCalcQueue(input);
+            }
+        }
+    }
+    //console.log('uI: ',userInput);
+    //console.log('cQ: ',calcQueue);
+}
+
+function clearUserInput() {
+    userInput = '';
+} 
+
+function removeLastString(a) {
+    return a = a.slice(0,-1);
+}
+
+function removeLastCQ() {
+    calcQueue.pop();
+}
+
+function removeFirstCQ() {
+    calcQueue.shift();
+}
+
+function addFirstCQ(a) {
+    calcQueue.unshift(a);
+}
+
+function pushToCalcQueue(input) {
+    calcQueue.push(input);
+}
+
+function classifyInput(input) {
+    //console.log(input);
+    if (digits.test(input)) {
+        return 'digits';
+    }  else if (/^\.$/.test(input)) {
+        return 'only decimal';
+    } else if (/^[\d]+\.[\d]+$/.test(input)) {
+        return 'digits with decimal inbetween';
+    } else if (/^[\d]+\.$/.test(input)) {
+        return 'digits ending on decimal';
+    } else if (/^[\d]+\.?[\d]+\%+/.test(input)) {
+        return 'digits ending on percent(s)';
+    } else if (operators.test(input)) {
+        return 'operator'
     }
 }
 
-function addition(a,b) {
-    return Number(a)+Number(b);
-}
+let result = '';
 
-function subtraction(a,b) {
-    return Number(a)-Number(b);
-}
-
-function multiplication(a,b) {
-    return Number(a)*Number(b);
-}
-
-function division(a,b) {
-    return Number(a)/Number(b);
-}
-
-function equals(a,b) {
-    return Number(b);
-}
-
-function percent(a,b) {
-    return Number(a)*Number(b)/100;
-}
-
-function backspace() {
-    inputBox.textContent = inputBox.textContent.slice(1,2);
-}
-
-function stageBuffer(id) {
-    console.log("before", buffer);
-    buffer.push(inputBox.textContent);
-    buffer.push(id);
-    console.log("after", buffer);
-}
-
-function updateOutput(buffer) {
-    console.log("asd");
-    console.log(buffer.length, buffer);
-    outputBox.textContent = '';
-    for (let i=0; i < buffer.length; i++) {
-        console.log(buffer[i]);
-        outputBox.textContent += buffer[i];
+//calculation processing
+function calculate(a,b,operator) {
+    //check what the 2nd element in calcQueue is and call the relevant function
+    switch (operator) {
+        case '+':
+            console.log('plus');
+            result = mathAdd(a,b);
+            break;
+        case '-':
+            console.log('minus');
+            result = mathMinus(a,b);
+            break;
+        case '*':
+            console.log('multiply');
+            result = mathMultiply(a,b);
+            break;
+        case '/':
+            console.log('divide');
+            result = mathDivide(a,b);
+            break;
+        default:
+            console.log('unexpected operator');
     }
-    console.log("final output", outputBox.textContent);
-    //outputBox.textContent = value;
-    //outputBox.textContent += operator;
+    removeFirstCQ();
+    removeFirstCQ();
+    removeFirstCQ();
+    addFirstCQ(result);
+    if (calcQueue[1] === '=') {
+        removeLastCQ();
+    }
+    console.log(calcQueue);
 }
 
-function clearEntry() {
-    inputBox.textContent = '0';
+
+function callMath() {
+    if (calcQueue.length > 2) {
+        calculate(calcQueue[0],calcQueue[2],calcQueue[1]);
+    }
 }
 
-function clearAll() {
-    inputBox.textContent = '0';
-    outputBox.textContent = '';
-    output = '';
-    buffer = [];
-    console.clear();
+
+function mathAdd(a,b) {
+    return Number(a) + Number(b);
 }
+
+function mathMinus(a,b) {
+    return Number(a) - Number(b);
+}
+
+function mathMultiply(a,b) {
+    return Number(a) * Number(b);
+}
+
+function mathDivide(a,b) {
+    return Number(a) / Number(b);
+}
+
