@@ -131,6 +131,9 @@ function addFirstCQ(a) {
 
 function pushToCalcQueue(input) {
     calcQueue.push(input);
+    if (calcQueue.length > 3) {
+        callMath();
+    }
 }
 
 function classifyInput(input) {
@@ -185,11 +188,29 @@ function calculate(a,b,operator) {
     console.log(calcQueue);
 }
 
-
 function callMath() {
-    if (calcQueue.length > 2) {
-        calculate(calcQueue[0],calcQueue[2],calcQueue[1]);
+    //check if the 1st number ends on a % and handle it
+    if (calcQueue[0].charAt(calcQueue[0].length-1) === '%') {
+        handlePercent(calcQueue[0]);
     }
+    calculate(calcQueue[0],calcQueue[2],calcQueue[1]);
+}
+
+//test.substring(0,test.indexOf('%'))/100+(test.substring(test.indexOf('%')+1));
+function handlePercent(a) {
+    console.log('before start: ',a);
+    a = removeLastString(a);
+    console.log('after last char rem: ',a);
+    if (a.indexOf('%') === -1) {
+        a = a/100;
+    }
+    console.log('after /100: ',a);
+    if (a.indexOf('%') != -1) {
+        a = a.substring(0,a.indexOf('%'))/100+(a.substring(a.indexOf('%')+1));
+        handlePercent(a);
+    }
+    
+    return a;
 }
 
 
