@@ -1,3 +1,8 @@
+let outputBox = document.querySelector('div.display-one');
+outputBox.textContent = '';
+let inputBox = document.querySelector('div.display-two');
+inputBox.textContent = '';
+
 const allowedInput = new RegExp(/^[\d|\/|\*|\-|\+|\=|\.|\%]$/);
 const digits = new RegExp(/^[\d]*$/i);
 const operators = new RegExp(/^[\/\*\-\+\=]$/);
@@ -38,7 +43,7 @@ function handleUserInput(input) {
             }
         //if input is different from %, concatenate it to userInput
         } else if (input !== '%') {
-            userInput += input;
+            pushToUserInput(input);
         } else if (input === '%' && calcQueue.length === 1) {
             calcQueue[0] = calcQueue[0]+input;
         }
@@ -53,11 +58,12 @@ function handleUserInput(input) {
                 clearUserInput();
                 pushToCalcQueue(input);
             } else {
-                userInput += input;
+                pushToUserInput(input);
+                updateInputDisplay(userInput);
             }
         } else if (classifyInput(userInput) === 'only decimal') {
             if (classifyInput(input) === 'digits') {
-                userInput += input;
+                pushToUserInput(input);
             } 
         } else if (classifyInput(userInput) === 'digits ending on percent(s)') {
             if (classifyInput(input) === 'digits') {
@@ -66,9 +72,9 @@ function handleUserInput(input) {
                 }
                 pushToCalcQueue(userInput);
                 pushToCalcQueue('*');
-                userInput = input;
+                pushToUserInput(input);
             } else if (input === '%') {
-                userInput += input;
+                pushToUserInput(input);
             } else if (classifyInput(input) === 'operator') {
                 if (calcQueue.length === 1) {
                     removeLastCQ();
@@ -79,10 +85,10 @@ function handleUserInput(input) {
             }
         } else if (classifyInput(userInput) === 'digits ending on decimal') {
             if (classifyInput(input) === 'digits') {
-                userInput += input;
+                pushToUserInput(input);
             } else if (input === '%') {
                 removeLastString(userInput);
-                userInput += input;
+                pushToUserInput(input);
             } else if (classifyInput(input) === 'operator') {
                 if (calcQueue.length === 1) {
                     removeLastCQ();
@@ -94,7 +100,7 @@ function handleUserInput(input) {
             }
         } else if (classifyInput(userInput) === 'digits with decimal inbetween') {
             if (classifyInput(input) === 'digits' || input === '%') {
-                userInput += input;
+                pushToUserInput(input);
             } else if (classifyInput(input) === 'operator') {
                 if (calcQueue.length === 1) {
                     removeLastCQ();
@@ -109,8 +115,17 @@ function handleUserInput(input) {
     //console.log('cQ: ',calcQueue);
 }
 
+function updateInputDisplay(a) {
+    inputBox.textContent = a;
+}
+
+function updateOutputDisplay(a) {
+    outputBox.textContent = a.join(' ');
+}
+
 function clearUserInput() {
     userInput = '';
+    updateInputDisplay(userInput);
 } 
 
 function removeLastString(a) {
@@ -119,14 +134,17 @@ function removeLastString(a) {
 
 function removeLastCQ() {
     calcQueue.pop();
+    updateOutputDisplay(calcQueue);
 }
 
 function removeFirstCQ() {
     calcQueue.shift();
+    updateOutputDisplay(calcQueue);
 }
 
 function addFirstCQ(a) {
     calcQueue.unshift(a);
+    updateOutputDisplay(calcQueue);
 }
 
 function pushToCalcQueue(input) {
@@ -134,6 +152,12 @@ function pushToCalcQueue(input) {
     if (calcQueue.length > 3) {
         callMath();
     }
+    updateOutputDisplay(calcQueue);
+}
+
+function pushToUserInput(input) {
+    userInput += input;
+    updateInputDisplay(userInput);
 }
 
 function classifyInput(input) {
@@ -161,19 +185,19 @@ function calculate(a,b,operator) {
     switch (operator) {
         case '+':
             console.log('plus');
-            result = mathAdd(a,b);
+            result = (Number(a)) + (Number(b));
             break;
         case '-':
             console.log('minus');
-            result = mathMinus(a,b);
+            result = Number(a) - Number(b);
             break;
         case '*':
             console.log('multiply');
-            result = mathMultiply(a,b);
+            result = Number(a) * Number(b);
             break;
         case '/':
             console.log('divide');
-            result = mathDivide(a,b);
+            result = Number(a) / Number(b);
             break;
         default:
             console.log('unexpected operator');
@@ -181,7 +205,7 @@ function calculate(a,b,operator) {
     removeFirstCQ();
     removeFirstCQ();
     removeFirstCQ();
-    addFirstCQ(result);
+    addFirstCQ(result.toString());
     if (calcQueue[1] === '=') {
         removeLastCQ();
     }
@@ -191,10 +215,15 @@ function calculate(a,b,operator) {
 function callMath() {
     //check if the 1st number ends on a % and handle it
     if (calcQueue[0].charAt(calcQueue[0].length-1) === '%') {
-        handlePercent(calcQueue[0]);
+        calcQueue[0] = handlePercent(calcQueue[0]);
+    }
+    if (calcQueue[2].charAt(calcQueue[2].length-1) === '%') {
+        calcQueue[2] = handlePercent(calcQueue[2]) * calcQueue[0];
     }
     calculate(calcQueue[0],calcQueue[2],calcQueue[1]);
 }
+
+let temp = '';
 
 //test.substring(0,test.indexOf('%'))/100+(test.substring(test.indexOf('%')+1));
 function handlePercent(a) {
@@ -202,31 +231,20 @@ function handlePercent(a) {
     a = removeLastString(a);
     console.log('after last char rem: ',a);
     if (a.indexOf('%') === -1) {
+        //console.log('only 1 %');
         a = a/100;
-    }
-    console.log('after /100: ',a);
-    if (a.indexOf('%') != -1) {
-        a = a.substring(0,a.indexOf('%'))/100+(a.substring(a.indexOf('%')+1));
+        console.log(a);
+        return a;
+    } else {
+        console.log('multiple %');
+        temp = '';
+        temp += a.substring(0,a.indexOf('%'))/100;
+        //console.log(temp);
+        temp += a.substring(a.indexOf('%'));
+        console.log('temp',temp);
+        a = temp;
+        console.log('a',a);
         handlePercent(a);
     }
-    
-    return a;
-}
-
-
-function mathAdd(a,b) {
-    return Number(a) + Number(b);
-}
-
-function mathMinus(a,b) {
-    return Number(a) - Number(b);
-}
-
-function mathMultiply(a,b) {
-    return Number(a) * Number(b);
-}
-
-function mathDivide(a,b) {
-    return Number(a) / Number(b);
 }
 

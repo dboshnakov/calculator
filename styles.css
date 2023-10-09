@@ -25,12 +25,12 @@ body {
 }
 
 .display {
+    position:relative;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    justify-content: space-evenly;
     gap: 3px;
-    padding: 3px 12px 3px 12px;
+    padding: 12px;
     box-sizing: border-box;
     border: 1px solid black;
     font-size: 80px;
@@ -41,6 +41,20 @@ body {
     margin-bottom: 10px;
     background: rgb(214, 214, 214);
     border-radius: 12px;   
+}
+
+
+
+.display-one {
+    position:absolute;
+    font-size: 48px;
+    top: 24px;
+    color: rgb(50,50,50);
+}
+
+.display-two { 
+    position: absolute;
+    bottom: 24px;
 }
 
 .buttons {
