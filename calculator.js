@@ -11,7 +11,7 @@ let currentInput = '';
 let userInput = '';
 let calcQueue = [];
 
-//3. handling of user input 
+//handling of user input 
 function isInputAllowed(input) {
     if (allowedInput.test(input)) {
         return true;
@@ -26,12 +26,15 @@ function isInputAllowed(input) {
 
 //check input type - digit, decimal point, percent, math operator:
 function handleUserInput(input) {
-    if (!isInputAllowed(input)) {
-        return "Error: Input character not allowed"
-    } 
-    //console.log('input:',input, " uI:",userInput, " cQ",calcQueue);
-    //if userInput is empty
-    if (userInput === '') {
+    if (input === 'bckspc' || input === 'C' || input === 'CE') {
+        switch (input) {
+            case 'bckspc': userInput = removeLastString(userInput); break;
+            case 'C': clearAll(); break;
+            case 'CE': clearUserInput(); break;
+        }
+    } else if (!isInputAllowed(input)) {
+        console.log("Error: Input character not allowed");
+    } else if (userInput === '') {
         //check if input is math operator
         if (classifyInput(input) === 'operator') {
             //if the last item in calcQueue is a math operator, replace it
@@ -87,13 +90,13 @@ function handleUserInput(input) {
             if (classifyInput(input) === 'digits') {
                 pushToUserInput(input);
             } else if (input === '%') {
-                removeLastString(userInput);
+                userInput = removeLastString(userInput);
                 pushToUserInput(input);
             } else if (classifyInput(input) === 'operator') {
                 if (calcQueue.length === 1) {
                     removeLastCQ();
                 }
-                removeLastString(userInput);
+                userInput = removeLastString(userInput);
                 pushToCalcQueue(userInput);
                 clearUserInput();
                 pushToCalcQueue(input);
@@ -120,17 +123,32 @@ function updateInputDisplay(a) {
 }
 
 function updateOutputDisplay(a) {
-    outputBox.textContent = a.join(' ');
+    if (a.length != 1) {
+        outputBox.textContent = a.join(' ');
+    }
 }
 
+//doubles also as the function for the CE button
 function clearUserInput() {
     userInput = '';
     updateInputDisplay(userInput);
 } 
 
-function removeLastString(a) {
-    return a = a.slice(0,-1);
+//function for the C button
+function clearAll() {
+    clearUserInput();
+    calcQueue = [];
+    updateOutputDisplay(calcQueue);
 }
+
+//needs to be reworked!
+function removeLastString(a) {
+    a = a.slice(0,-1);
+    updateInputDisplay(a);
+    return a;
+}
+
+
 
 function removeLastCQ() {
     calcQueue.pop();
@@ -170,7 +188,7 @@ function classifyInput(input) {
         return 'digits with decimal inbetween';
     } else if (/^[\d]+\.$/.test(input)) {
         return 'digits ending on decimal';
-    } else if (/^[\d]+\.?[\d]+\%+/.test(input)) {
+    } else if (/^[\d]+\.?[\d]?\%+/.test(input)) {
         return 'digits ending on percent(s)';
     } else if (operators.test(input)) {
         return 'operator'
@@ -184,7 +202,7 @@ function calculate(a,b,operator) {
     //check what the 2nd element in calcQueue is and call the relevant function
     switch (operator) {
         case '+':
-            console.log('plus');
+            console.log('plus ',a,b);
             result = (Number(a)) + (Number(b));
             break;
         case '-':
@@ -209,6 +227,7 @@ function calculate(a,b,operator) {
     if (calcQueue[1] === '=') {
         removeLastCQ();
     }
+    clearUserInput();
     console.log(calcQueue);
 }
 
@@ -216,10 +235,12 @@ function callMath() {
     //check if the 1st number ends on a % and handle it
     if (calcQueue[0].charAt(calcQueue[0].length-1) === '%') {
         calcQueue[0] = handlePercent(calcQueue[0]);
+        console.log('calcQueue[0]: ',calcQueue[0]);
     }
     if (calcQueue[2].charAt(calcQueue[2].length-1) === '%') {
-        calcQueue[2] = handlePercent(calcQueue[2]) * calcQueue[0];
+        calcQueue[2] = (handlePercent(calcQueue[2]) * calcQueue[0]);
     }
+    console.log('cQ: ',calcQueue);
     calculate(calcQueue[0],calcQueue[2],calcQueue[1]);
 }
 
@@ -227,24 +248,26 @@ let temp = '';
 
 //test.substring(0,test.indexOf('%'))/100+(test.substring(test.indexOf('%')+1));
 function handlePercent(a) {
-    console.log('before start: ',a);
+    temp = '';
+    //console.log('before start: ',a);
     a = removeLastString(a);
-    console.log('after last char rem: ',a);
+    //console.log('after last char rem: ',a);
     if (a.indexOf('%') === -1) {
         //console.log('only 1 %');
-        a = a/100;
-        console.log(a);
-        return a;
+        //console.log('a 1.1: ',a);
+        temp = (a/100).toString();
+        //console.log('a 1.2: ',temp);
     } else {
-        console.log('multiple %');
-        temp = '';
+        //console.log('multiple %');
         temp += a.substring(0,a.indexOf('%'))/100;
-        //console.log(temp);
+        //console.log(a.substring(0,a.indexOf('%')));
+        //console.log('temp 2.1: ',temp);
         temp += a.substring(a.indexOf('%'));
-        console.log('temp',temp);
+        //console.log('temp 2.2: ',temp);
         a = temp;
-        console.log('a',a);
+        //console.log('a',a);
         handlePercent(a);
     }
+    return temp;
 }
 
