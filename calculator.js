@@ -3,7 +3,10 @@ outputBox.textContent = '';
 let inputBox = document.querySelector('div.display-two');
 inputBox.textContent = '';
 
-document.addEventListener('keyup', (event) => { handleUserInput(event.key);}, false);
+//allow input on keyup event from keyboard and pass it through the input handling function
+document.addEventListener('keyup', (event) => { 
+    handleUserInput(event.key);
+}, false);
 
 const allowedInput = new RegExp(/^[\d|\/|\*|\-|\+|\=|\.|\%]$/);
 const digits = new RegExp(/^[\d]*$/i);
@@ -15,9 +18,9 @@ let calcQueue = [];
 
 //handling of user input 
 function isInputAllowed(input) {
-    if (allowedInput.test(input)) {
+    if (allowedInput.test(input) || input === 'Backspace') {
         return true;
-    } 
+    }
     return false;
 }
 //Four possible cases:
@@ -28,9 +31,9 @@ function isInputAllowed(input) {
 
 //check input type - digit, decimal point, percent, math operator:
 function handleUserInput(input) {
-    if (input === 'bckspc' || input === 'C' || input === 'CE') {
+    if (input === 'Backspace' || input === 'C' || input === 'CE') {
         switch (input) {
-            case 'bckspc': userInput = removeLastString(userInput); break;
+            case 'Backspace': userInput = removeLastString(userInput); break;
             case 'C': clearAll(); break;
             case 'CE': clearUserInput(); break;
         }
