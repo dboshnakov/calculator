@@ -3,6 +3,8 @@ outputBox.textContent = '';
 let inputBox = document.querySelector('div.display-two');
 inputBox.textContent = '';
 
+document.addEventListener('keyup', (event) => { handleUserInput(event.key);}, false);
+
 const allowedInput = new RegExp(/^[\d|\/|\*|\-|\+|\=|\.|\%]$/);
 const digits = new RegExp(/^[\d]*$/i);
 const operators = new RegExp(/^[\/\*\-\+\=]$/);
@@ -120,6 +122,7 @@ function handleUserInput(input) {
 
 function updateInputDisplay(a) {
     inputBox.textContent = a;
+    resizeUserInput();
 }
 
 function updateOutputDisplay(a) {
@@ -131,6 +134,7 @@ function updateOutputDisplay(a) {
 //doubles also as the function for the CE button
 function clearUserInput() {
     userInput = '';
+    resizeUserInput();
     updateInputDisplay(userInput);
 } 
 
@@ -141,10 +145,11 @@ function clearAll() {
     updateOutputDisplay(calcQueue);
 }
 
-//needs to be reworked!
+
 function removeLastString(a) {
     a = a.slice(0,-1);
     updateInputDisplay(a);
+    resizeUserInput();
     return a;
 }
 
@@ -176,6 +181,7 @@ function pushToCalcQueue(input) {
 function pushToUserInput(input) {
     userInput += input;
     updateInputDisplay(userInput);
+    resizeUserInput();
 }
 
 function classifyInput(input) {
@@ -184,7 +190,7 @@ function classifyInput(input) {
         return 'digits';
     }  else if (/^\.$/.test(input)) {
         return 'only decimal';
-    } else if (/^[\d]+\.[\d]+$/.test(input)) {
+    } else if (/^[\d]+|^\.[\d]+$/.test(input)) {
         return 'digits with decimal inbetween';
     } else if (/^[\d]+\.$/.test(input)) {
         return 'digits ending on decimal';
@@ -195,27 +201,54 @@ function classifyInput(input) {
     }
 }
 
+let temp = '';
+
+//test.substring(0,test.indexOf('%'))/100+(test.substring(test.indexOf('%')+1));
+function handlePercent(a) {
+    temp = '';
+    a = removeLastString(a);
+    if (a.indexOf('%') === -1) {
+        temp = (a/100).toString();
+    } else {
+        temp += a.substring(0,a.indexOf('%'))/100;
+        temp += a.substring(a.indexOf('%'));
+        a = temp;
+        handlePercent(a);
+    }
+    return temp;
+}
+
+function countDecimal(str) {
+    if (str.toString().indexOf('.') != -1) {
+        return str.toString().length-1-str.toString().indexOf('.');
+    }
+    return 0;
+}
+
 let result = '';
 
 //calculation processing
 function calculate(a,b,operator) {
+    //check if a or b have a decimal point
+    let multiplier = Math.pow(10,(Math.max(countDecimal(a),countDecimal(b))));
     //check what the 2nd element in calcQueue is and call the relevant function
     switch (operator) {
         case '+':
-            console.log('plus ',a,b);
-            result = (Number(a)) + (Number(b));
+            console.log('plus ',a,b,multiplier);
+            //result = (Number(a)) + (Number(b));
+            result = ((Number(a)*multiplier) + (Number(b)*multiplier))/multiplier;
             break;
         case '-':
-            console.log('minus');
-            result = Number(a) - Number(b);
+            console.log('minus',a,b,multiplier);
+            result = ((Number(a)*multiplier) - (Number(b)*multiplier))/multiplier;
             break;
         case '*':
-            console.log('multiply');
-            result = Number(a) * Number(b);
+            console.log('multiply',a,b,multiplier);
+            result = ((Number(a)*multiplier) * (Number(b)*multiplier))/(multiplier*multiplier);
             break;
         case '/':
-            console.log('divide');
-            result = Number(a) / Number(b);
+            console.log('divide',a,b,multiplier);
+            result = ((Number(a)*multiplier) / (Number(b)*multiplier));
             break;
         default:
             console.log('unexpected operator');
@@ -244,30 +277,16 @@ function callMath() {
     calculate(calcQueue[0],calcQueue[2],calcQueue[1]);
 }
 
-let temp = '';
-
-//test.substring(0,test.indexOf('%'))/100+(test.substring(test.indexOf('%')+1));
-function handlePercent(a) {
-    temp = '';
-    //console.log('before start: ',a);
-    a = removeLastString(a);
-    //console.log('after last char rem: ',a);
-    if (a.indexOf('%') === -1) {
-        //console.log('only 1 %');
-        //console.log('a 1.1: ',a);
-        temp = (a/100).toString();
-        //console.log('a 1.2: ',temp);
-    } else {
-        //console.log('multiple %');
-        temp += a.substring(0,a.indexOf('%'))/100;
-        //console.log(a.substring(0,a.indexOf('%')));
-        //console.log('temp 2.1: ',temp);
-        temp += a.substring(a.indexOf('%'));
-        //console.log('temp 2.2: ',temp);
-        a = temp;
-        //console.log('a',a);
-        handlePercent(a);
+function resizeUserInput() {
+    if (userInput.length <= 17 && inputBox.style.fontSize != '72px') {
+        inputBox.style.fontSize = '72px';
+    } else if (userInput.length > 17 && userInput.length < 20) {
+        inputBox.style.fontSize = '64px';
+    } else if (userInput.length > 20 && userInput.length < 23) {
+        inputBox.style.fontSize = '56px';
+    } else if (userInput.length >= 23) {
+        inputBox.style.fontSize = '48px';
+    
     }
-    return temp;
 }
 
