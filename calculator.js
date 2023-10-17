@@ -1,7 +1,8 @@
+let placeholder = '0';
 let outputBox = document.querySelector('div.display-one');
 outputBox.textContent = '';
 let inputBox = document.querySelector('div.display-two');
-inputBox.textContent = '';
+inputBox.textContent = placeholder;
 
 //allow input on keyup event from keyboard and pass it through the input handling function
 document.addEventListener('keyup', (event) => { 
@@ -50,7 +51,10 @@ function handleUserInput(input) {
                 pushToCalcQueue(input);
             }
         //if input is different from %, concatenate it to userInput
-        } else if (input !== '%') {
+        } else if (input === '.') {
+            pushToUserInput('0');
+            pushToUserInput(input);
+        } else if (classifyInput(input) === 'digits') {
             pushToUserInput(input);
         } else if (input === '%' && calcQueue.length === 1) {
             calcQueue[0] = calcQueue[0]+input;
@@ -65,6 +69,8 @@ function handleUserInput(input) {
                 pushToCalcQueue(userInput);
                 clearUserInput();
                 pushToCalcQueue(input);
+            } else if (input === '0' && userInput === '0') {
+
             } else {
                 pushToUserInput(input);
                 updateInputDisplay(userInput);
@@ -139,6 +145,7 @@ function clearUserInput() {
     userInput = '';
     resizeUserInput();
     updateInputDisplay(userInput);
+    inputBox.textContent = placeholder;
 } 
 
 //function for the C button
