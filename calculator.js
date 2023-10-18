@@ -288,14 +288,14 @@ function callMath() {
 }
 
 function resizeUserInput() {
-    if (userInput.length <= 17 && inputBox.style.fontSize != '72px') {
-        inputBox.style.fontSize = '72px';
-    } else if (userInput.length > 17 && userInput.length < 20) {
-        inputBox.style.fontSize = '64px';
-    } else if (userInput.length > 20 && userInput.length < 23) {
-        inputBox.style.fontSize = '56px';
+    if (userInput.length <= 17 && inputBox.style.fontSize != '1em') {
+        inputBox.style.fontSize = '1em';
+    } else if (userInput.length > 17 && userInput.length < 19) {
+        inputBox.style.fontSize = '0.9em';
+    } else if (userInput.length > 19 && userInput.length < 23) {
+        inputBox.style.fontSize = '0.8em';
     } else if (userInput.length >= 23) {
-        inputBox.style.fontSize = '48px';
+        inputBox.style.fontSize = '0.7em';
     
     }
 }

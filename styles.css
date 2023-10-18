@@ -3,12 +3,37 @@
     src: url('./font/TrueType/SFDigitalReadout-Heavy.ttf') format('truetype');
 }
 
+@media (orientation: portrait) and (max-width: 500px), (max-height: 799px) {
+    .frame {
+        font-size: 10px;
+    }
+}
+
+@media (orientation: landscape) and (max-width: 799px), (max-height: 500px) {
+    .frame {
+        font-size: 10px;
+    }
+}
+
+@media (orientation: portrait) and (max-width: 300px), (max-height: 450px) {
+    .frame {
+        font-size: 7px;
+    }
+}
+
+@media (orientation: landscape) and (max-width: 450px), (max-height: 300px) {
+    .frame {
+        font-size: 7px;
+    }
+}
+
 body {
     display: flex;
     height: 100vh;
     width: 100vw;
     justify-content: center;
     align-items: center;
+    font-size: 100%;
 }
 
 .frame {
@@ -17,11 +42,12 @@ body {
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
-    border: 1px solid black;
-    width: 500px;
-    height: 800px;
+    border: 0.1em solid black;
+    width: 31em;
+    height: 46em;
     background: rgb(100,100,100);
-    border-radius: 24px;    
+    border-radius: 1.2em;
+    margin-top: 4em;
 }
 
 .display {
@@ -29,32 +55,32 @@ body {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 3px;
-    padding: 10px;
+    gap: 6em;
+    padding: 0.2em;
     box-sizing: border-box;
-    border: 1px solid black;
-    font-size: 72px;
+    border: 0.025em solid black;
+    font-size: 4.2em; /*72px 4.2em*/
     font-family: "SFDigital";
-    width: 480px;
-    height: 180px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    width: 7em;/*480px;*/
+    height: 2.4em; /*180px;*/
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
     background: rgb(214, 214, 214);
-    border-radius: 12px;   
+    border-radius: 0.2em;   
 }
 
 
 
 .display-one {
     position:absolute;
-    font-size: 48px;
-    top: 24px;
+    font-size: 0.72em;/*48px;*/
+    top: 0.36em;/*24px;*/
     color: rgb(50,50,50);
 }
 
 .display-two { 
     position: absolute;
-    bottom: 24px;
+    bottom: 0.36em; /*24px*/
 }
 
 .buttons {
@@ -62,9 +88,9 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    width: 480px;
-    height: 590px;
-    padding: 10px;
+    width: 7.2em;/*480px;*/
+    height: 40em;
+    padding: 0.15em;
 }
 
 .row{
@@ -72,9 +98,9 @@ body {
     flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
-    width: 480px;
-    height: 100px;
-    margin-bottom: 10px;
+    width: 30em;/*480px;*/
+    height: 6.25em;
+    margin-bottom: 0.8em;
 }
 
 
@@ -84,19 +110,19 @@ body {
     border: 1px solid black;
     justify-content: center;
     align-items: center;
-    width: 100px;
-    height: 100px;
-    font-size: 40px;
+    width: 3.2em;/*100px;*/
+    height: 3.2em;
+    font-size: 2em;/*40px;*/
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     color: white;
     background: rgb(20,20,20);
-    border-radius: 12px;  
+    border-radius: 0.4em;/*12px;*/  
 }
 
 .backspace {
     display: flex;
     flex-direction: row;
-    padding-right: 6px;
+    padding-right: 0.2em;/*6px;*/
 }
 
 .triangle {
@@ -104,9 +130,9 @@ body {
     height: 0;
     position: relative;
     box-sizing: border-box;
-    border-top: 16px solid transparent;
-    border-bottom: 16px solid transparent;
-    border-right: 16px solid white;
+    border-top: 0.5em/*16px*/ solid transparent;
+    border-bottom: 0.5em solid transparent;
+    border-right: 0.5em solid white;
     background: transparent;
 }
 
@@ -116,12 +142,12 @@ body {
     height: 0;
     position: absolute;
     box-sizing: border-box;
-    border-top: 14px solid transparent;
-    border-bottom: 14px solid transparent;
-    border-right: 14px solid rgb(20,20,20);
+    border-top: 0.44em/*14px*/ solid transparent;
+    border-bottom: 0.44em solid transparent;
+    border-right: 0.44em solid rgb(20,20,20);
     background: transparent;
-    top: -14px;
-    left: 2px;
+    top: -0.44em;
+    left: 0.054em;/*2px;*/
 }
 
 .square {
@@ -129,8 +155,8 @@ body {
     height: 0;
     position: relative;
     box-sizing: border-box;
-    border: 16px solid white;
-    border-left: 16px solid transparent;
+    border: 0.5em/*16px*/ solid white;
+    border-left: 0.5em solid transparent;
     
 }
 
@@ -140,16 +166,18 @@ body {
     height: 0;
     position: absolute;
     box-sizing: border-box;
-    border: 15px solid rgb(20,20,20);
-    top: -15px;
-    left: -15px;
+    border: 0.47em/*15px*/ solid rgb(20,20,20);
+    top: -0.47em;
+    left: -0.47em;
     color: white;
 }
 
 .x {
     position: relative;
     color: white;
-    top: -21px;
-    left: -10px;
-    font-size: 32px;
+    top: -0.64em;/*-21px;*/
+    left: -.30em;/*-10px;*/
+    font-size: 1em;/*32px;*/
 }
+
+
